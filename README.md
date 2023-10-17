@@ -1,46 +1,89 @@
-# Getting Started with Create React App
+# `modal-provider-react`
+**Open and populate modals from anywhere in your React DOM**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### Usage
 
-## Available Scripts
+ - Initialize using the `<ModalProvider>` wrapper.
 
-In the project directory, you can run:
+```tsx
+// index.tsx
 
-### `npm start`
+import ModalProvider from 'modal-provider-react';
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+createRoot(document.getElementById('root')!)
+    .render(
+        <React.StrictMode>
+            <ModalProvider>
+                {/* rest of your app here */}
+            </ModalProvider>
+        </React.StrictMode>
+    );
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+ - Create your modal components, accepting props of type `{ data }: ModalProps<T>` (with `T` the user-defined type of the data you'll provide to your modal).
+```tsx
+// MyAuthModal.tsx
 
-### `npm test`
+// modal-provider-react comes with a built-in <FormattedModal>, but you can use your own too
+import { FormattedModal, ModalProps } from 'modal-provider-react';
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export default function MyAuthModal({ data }: ModalProps<MyUserType>) {
+    return (
+        <FormattedModal className='auth'>
+            <h1>Hi, {data.displayName}</h1>
+        </FormattedModal>
+    );
+}
+```
 
-### `npm run build`
+ - Declare your modal to the `ModalProvider`.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```tsx
+// index.tsx
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+import ModalProvider, { UseModal } from 'modal-provider-react';
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+createRoot(document.getElementById('root')!)
+    .render(
+        <React.StrictMode>
+            <ModalProvider>
+                <UseModal name='auth'>
+                    <MyAuthModal />
+                </UseModal>
+                
+                {/* rest of your app here */}
+            </ModalProvider>
+        </React.StrictMode>
+    );
+```
 
-### `npm run eject`
+ - Whenever you wish to launch a modal or close the currently-active modal, use the `useModal` hook.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```tsx
+// Home.tsx
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+import { useModal } from 'modal-provider-react';
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+export default function Home() {
+    const {
+        launchModal,
+        clearModal
+    } = useModal();
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    const currentUser: MyUserType = {
+        displayName: 'John Smith',
+        email: 'john@example.com',
+    };
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+    return (
+        <div className='home-page'>
+            <button
+                className='user-settings'
+                onClick={() => launchModal('auth', currentUser)}
+            >
+                My settings
+            </button>
+        </div>
+    );
+}
+```
